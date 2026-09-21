@@ -2,6 +2,9 @@
 
 Implementação da skill `refactor-arch` e resultado de sua execução nos três projetos backend: análise, auditoria, refatoração MVC e validação dos contratos.
 
+- **Fork público:** [fbondia/mba-ia-refactor-projects-skill](https://github.com/fbondia/mba-ia-refactor-projects-skill)
+- **Repositório-base:** [devfullcycle/mba-ia-refactor-projects-skill](https://github.com/devfullcycle/mba-ia-refactor-projects-skill)
+
 ## Estado da implementação
 
 - [x] Três projetos-base importados
