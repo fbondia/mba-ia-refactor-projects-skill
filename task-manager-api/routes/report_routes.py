@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
 from controllers.report_controller import CategoryController, ReportController
 from middlewares.auth import admin_required, login_required
@@ -15,13 +15,13 @@ def respond(result):
 
 
 @report_bp.get("/reports/summary")
-@login_required
+@admin_required
 def summary_report(): return respond(reports.summary())
 
 
 @report_bp.get("/reports/user/<int:user_id>")
 @login_required
-def user_report(user_id): return respond(reports.user(user_id))
+def user_report(user_id): return respond(reports.user(user_id, g.current_user))
 
 
 @report_bp.get("/categories")

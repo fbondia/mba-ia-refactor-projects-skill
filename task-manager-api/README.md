@@ -11,13 +11,13 @@ export SECRET_KEY='replace-with-a-long-random-value'
 export SEED_ADMIN_PASSWORD='replace-with-a-strong-development-password'
 export SEED_USER_PASSWORD='replace-with-a-strong-development-password'
 export SEED_MANAGER_PASSWORD='replace-with-a-strong-development-password'
-python seed.py
-python app.py
+.venv/bin/python seed.py
+.venv/bin/python app.py
 ```
 
 A aplicação sobe em `http://127.0.0.1:5000`. O `seed.py` recria o banco SQLite com usuários, categorias e tasks de exemplo.
 
-Criação de usuário e login são públicos. Os demais endpoints exigem `Authorization: Bearer <token>`, e operações administrativas exigem role `admin`. Tokens são assinados e expiram conforme `TOKEN_MAX_AGE`.
+Criação de usuário e login são públicos. Usuários comuns e managers acessam somente suas próprias tarefas, perfil e relatório individual. Administradores podem gerenciar todos os recursos, reatribuir tarefas e consultar `/reports/summary`. Criar uma tarefa sem `user_id` atribui-a ao usuário autenticado. Os demais endpoints exigem `Authorization: Bearer <token>`, e operações administrativas exigem role `admin`. Tokens são assinados e expiram conforme `TOKEN_MAX_AGE`.
 
 ## Testes
 

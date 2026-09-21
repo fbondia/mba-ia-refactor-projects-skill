@@ -2,10 +2,12 @@
 
 - **Project:** `ecommerce-api-legacy`
 - **Audit date:** `2026-09-21`
+- **Source snapshot:** `6d1ce6248c3e956801010a89d8bdaab48029bf30`
+- **Source inventory:** [inventário original](../validation/source-inventory.md)
 - **Stack:** Node.js + Express 4.18.2 + sqlite3 5.1.6
 - **Scope:** `src/`, manifest e contrato HTTP
 - **Analyzed:** 3 arquivos JavaScript, 180 linhas
-- **Baseline:** não há testes configurados; boot e endpoints ainda não executados nesta implementação inicial
+- **Baseline:** snapshot anterior à refatoração; sem suíte de testes. Validações históricas declaradas abaixo; revalidação atual em `validation/`.
 
 ## Summary
 
@@ -18,6 +20,8 @@
 | **Total** | **11** |
 
 ## Findings
+
+Snapshot da Fase 2: os status `OPEN` abaixo descrevem o código original. A tabela **Current finding status** registra o estado após correção e é a referência vigente.
 
 ### [CRITICAL] AP-02 — Credenciais e chave de pagamento hardcoded
 
@@ -134,6 +138,8 @@
 
 ## Validation Baseline
 
+Registro histórico preservado: os comandos/observações desta tabela não possuem transcrição integral no repositório. Não confundir com os logs reproduzíveis da revalidação atual.
+
 | Check | Command/request | Result before refactor |
 |---|---|---|
 | Syntax/import | processo Node 18 | PASS |
@@ -148,13 +154,13 @@
 
 ## Approval Gate
 
-No source files were modified during phases 1–2.
+Registro histórico declarado: nenhuma alteração de código nas fases 1–2. A transcrição da invocação original e da resposta ao gate não foi preservada; este texto não comprova aquela execução.
 
 Phase 2 complete. Proceed with refactoring (Phase 3)? [y/n]
 
 ## Refactoring Result
 
-Refatoração autorizada e concluída em 2026-09-21.
+Refatoração inicial registrada em 2026-09-21. Sua autorização histórica foi declarada, mas a transcrição não foi preservada. As correções posteriores foram autorizadas nesta conversa por “Aplique as correções e ajustes necessários”.
 
 ### Current finding status
 
@@ -178,6 +184,8 @@ Refatoração autorizada e concluída em 2026-09-21.
 
 ### Validation after refactor
 
+Resultados da primeira entrega, preservados como histórico. Consulte a revalidação atual ao final para os testes/logs vigentes.
+
 | Check | Result |
 |---|---|
 | Tests | PASS — 3 testes Node, incluindo rollback e cascade |
@@ -191,3 +199,11 @@ Refatoração autorizada e concluída em 2026-09-21.
 
 - O payload legado ainda recebe um número de cartão para compatibilidade; produção deve substituí-lo por tokenização do provedor.
 - `sqlite3@5.1.7` traz advisories transitivos majoritariamente pela toolchain `node-gyp/tar`; remover exige trocar o driver ou aceitar uma mudança breaking. O risco permanece `OPEN` e documentado.
+
+### Revalidação atual
+
+- Testes: **4 passaram**, incluindo contratos HTTP e autorização administrativa.
+- Comando reproduzível na raiz: `python3 validation/revalidate.py --node /caminho/para/node` (Node >=18 <23; esta execução usa 18.20.8).
+- Saída atual: [testes](../validation/project-2-tests.log), [boot real](../validation/boot-smoke.log).
+- Boot usa banco temporário e encerra o servidor após a requisição HTTP. Os testes cobrem métodos/rotas, não uma equivalência exaustiva de todos os payloads legados.
+- A execução inicial da skill nas três fases não foi reconstituída; as evidências atuais demonstram o estado corrigido da entrega.

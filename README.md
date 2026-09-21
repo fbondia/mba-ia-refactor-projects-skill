@@ -16,10 +16,7 @@ Implementação da skill `refactor-arch` e resultado de sua execução nos três
 - [x] Skill Codex na raiz e copiada para `.agents/skills/refactor-arch/` dentro dos três projetos
 - [x] Relatórios de auditoria com resultado da Fase 3
 - [x] Baseline executável de boot e endpoints
-- [x] Fase 3 executada após confirmação
 - [x] Código dos três projetos refatorado e validado
-
-A Fase 3 foi executada após aprovação explícita. Cada relatório preserva a evidência original e acrescenta status atual, nova estrutura, comandos de validação e riscos remanescentes.
 
 ## Estrutura
 
@@ -109,7 +106,7 @@ A abordagem é agnóstica de tecnologia porque procura papéis e dependências �
 
 O principal cuidado foi evitar uma falsa promessa de automação segura. A Fase 2 pode criar apenas o relatório e termina com uma pergunta explícita. A Fase 3 exige baseline, mudanças incrementais e evidência de testes/boot/endpoints antes de declarar sucesso.
 
-Para atender tanto à convenção do Codex quanto à execução isolada exigida pelo desafio, a mesma skill está instalada em cada projeto em `.agents/skills/refactor-arch/`. Uma cópia também permanece na raiz para permitir a auditoria conjunta. A seleção do alvo usa o diretório atual: dentro de um projeto, a execução sem alvo processa apenas aquele projeto; na raiz, processa os três.
+Para atender tanto à convenção do Codex quanto à execução isolada exigida pelo desafio, a mesma skill está instalada em cada projeto em `.agents/skills/refactor-arch/`. Uma cópia também permanece na raiz para permitir a auditoria conjunta. A seleção do alvo usa manifests e entry points da aplicação atual; na raiz de um workspace, descobre aplicações independentes. Também funciona sem Git e com outros nomes de pasta. Os nomes `audit-project-{1,2,3}.md` são aliases do desafio; outros projetos usam `audit-<identificador>.md`.
 
 ### Desafios encontrados
 
@@ -120,11 +117,22 @@ Para atender tanto à convenção do Codex quanto à execução isolada exigida 
 
 ## Resultados
 
+Findings da auditoria inicial, por severidade:
+
+| Projeto | CRITICAL | HIGH | MEDIUM | LOW | Total |
+|---|---:|---:|---:|---:|---:|
+| code-smells-project | 4 | 2 | 3 | 2 | 11 |
+| ecommerce-api-legacy | 3 | 3 | 3 | 2 | 11 |
+| task-manager-api | 3 | 2 | 4 | 2 | 11 |
+
+Contagem do código original: 4/3/15 arquivos e 780/180/1.158 linhas, respectivamente. O [inventário](validation/source-inventory.md) inclui arquivos vazios e identifica o commit auditado. A contagem anterior de 13 arquivos do Task Manager foi corrigida.
+
+
 | Projeto | Findings iniciais | Resolvidos | Mitigados | Testes | Boot/smoke |
 |---|---:|---:|---:|---:|---|
 | code-smells-project | 11 | 10 | 1 | 4/4 | PASS |
-| ecommerce-api-legacy | 11 | 11 | 0 | 3/3 | PASS |
-| task-manager-api | 11 | 11 | 0 | 4/4 | PASS |
+| ecommerce-api-legacy | 11 | 11 | 0 | 4/4 | PASS |
+| task-manager-api | 11 | 11 | 0 | 7/7 | PASS |
 
 O E-commerce Flask passou de quatro scripts acoplados para app factory, views/routes, controllers, repositories, infraestrutura e middleware. O LMS Express substituiu a God Class por composition root, controllers, services, repositories e adapters. O Task Manager preservou seus models/Blueprints, mas moveu regras para services/controllers e adicionou autenticação assinada e error handling central.
 
@@ -144,14 +152,15 @@ Logs reais da validação: [`validation/project-1-tests.log`](validation/project
 |---|:---:|:---:|:---:|
 | Linguagem detectada corretamente | ✓ | ✓ | ✓ |
 | Framework detectado corretamente | ✓ | ✓ | ✓ |
-| Domínio descrito corretamente | ✓ | ✓ | ✓ |
+| Domínio descrito corretamente na documentação | ✓ | ✓ | ✓ |
 | Número de arquivos condizente com o source set original | ✓ | ✓ | ✓ |
 | Relatório segue o template | ✓ | ✓ | ✓ |
 | Findings possuem arquivos e linhas do código auditado | ✓ | ✓ | ✓ |
 | Findings ordenados por severidade | ✓ | ✓ | ✓ |
 | Pelo menos 5 findings | ✓ (11) | ✓ (11) | ✓ (11) |
 | APIs deprecated avaliadas | ✓ | ✓ | ✓ (`Query.get`) |
-| Approval gate antes da Fase 3 | ✓ | ✓ | ✓ |
+| Gate previsto na skill | ✓ | ✓ | ✓ |
+| Transcrição da execução original e aprovação preservada | Não disponível | Não disponível | Não disponível |
 | Estrutura MVC adequada à stack | ✓ | ✓ | ✓ |
 | Configuração sem segredos hardcoded | ✓ | ✓ | ✓ |
 | Models/repositories abstraem dados | ✓ | ✓ | ✓ |
@@ -161,6 +170,14 @@ Logs reais da validação: [`validation/project-1-tests.log`](validation/project
 | Entry point/composition root claro | ✓ | ✓ | ✓ |
 | Aplicação inicia sem erros | ✓ | ✓ | ✓ |
 | Endpoints originais cobertos por testes/smoke | ✓ | ✓ | ✓ |
+
+### Ajustes e limites da evidência
+
+- Task Manager: permissões de propriedade verificadas em leitura, escrita, exclusão, atribuição, listagem, busca e estatísticas. Administradores podem operar sobre todos os usuários; usuários comuns e managers só sobre seus próprios recursos. Relatório global exige admin.
+- O campo `days_overdue` e o formato original dos itens atrasados foram restaurados e têm teste de contrato.
+- Express: teste HTTP real cobre checkout, relatório, delete, token ausente/inválido e payload inválido; os testes anteriores de banco foram mantidos.
+- Os logs atuais comprovam 15 testes e boot das três aplicações. Não existe transcrição integral da execução inicial da skill (Fases 1–3); o inventário reconstruído não é apresentado como tal. O gate está implementado nas instruções, mas seu comportamento histórico não pode ser comprovado só por estes arquivos.
+- A detecção genérica da skill foi ajustada nas instruções; isso não equivale a comprovar execução em todas as tecnologias possíveis.
 
 ## Como executar no Codex
 
@@ -216,4 +233,10 @@ cd ../task-manager-api
 SECRET_KEY=test-secret-not-for-production .venv/bin/python -W error::DeprecationWarning -m unittest discover -s tests -v
 ```
 
-Os outputs capturados desses comandos e do boot real estão em [`validation/`](validation/README.md).
+Para reproduzir e atualizar os logs de testes, sintaxe e boot real dos três projetos:
+
+```bash
+python3 validation/revalidate.py --node /caminho/para/node
+```
+
+Use um Node >=18 <23; a execução registrada usa Node 18.20.8. O script usa bancos temporários e encerra os servidores. Os outputs estão em [`validation/`](validation/README.md).

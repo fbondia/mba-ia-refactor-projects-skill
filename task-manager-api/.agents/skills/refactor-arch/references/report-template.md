@@ -7,6 +7,8 @@ Use este formato sem omitir seções. Substitua placeholders por dados comprovad
 
 - **Project:** `<nome>`
 - **Audit date:** `<YYYY-MM-DD>`
+- **Source snapshot:** `<commit ou identificação do snapshot auditado>`
+- **Source inventory:** `<lista ou link para inventário e regra de contagem>`
 - **Stack:** `<linguagem + framework + persistência>`
 - **Scope:** `<arquivos/diretórios>`
 - **Analyzed:** `<N arquivos | N linhas>`
@@ -65,4 +67,4 @@ No source files were modified during phases 1–2.
 Phase 2 complete. Proceed with refactoring (Phase 3)? [y/n]
 ```
 
-Após a fase 3, acrescente `## Refactoring Result`, a nova estrutura, os comandos/resultados completos e atualize o status dos findings sem apagar a evidência original.
+Após a fase 3, acrescente `## Refactoring Result`, a nova estrutura, os comandos/resultados completos e mantenha os status atuais em uma tabela única identificada como vigente. Se preservar os status iniciais, rotule explicitamente a seção como snapshot da Fase 2. Separe validações históricas de novas execuções; marque logs ou confirmações ausentes como não comprovados.

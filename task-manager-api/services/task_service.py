@@ -4,7 +4,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
 from database import db
-from exceptions import NotFoundError, ValidationError
+from exceptions import AuthorizationError, NotFoundError, ValidationError
 from models.category import Category
 from models.task import MAX_PRIORITY, MIN_PRIORITY, VALID_STATUSES, Task
 from models.user import User
@@ -12,47 +12,61 @@ from models.user import User
 
 class TaskService:
     @staticmethod
-    def list_all():
+    def _visible(actor):
+        statement = db.select(Task)
+        return statement if actor.is_admin() else statement.where(Task.user_id == actor.id)
+
+    @staticmethod
+    def _authorize(task, actor):
+        if not actor.is_admin() and task.user_id != actor.id:
+            raise AuthorizationError("Operação não autorizada")
+
+    @staticmethod
+    def list_all(actor):
         tasks = db.session.execute(
-            db.select(Task).options(joinedload(Task.user), joinedload(Task.category))
+            TaskService._visible(actor).options(joinedload(Task.user), joinedload(Task.category))
         ).scalars().all()
         return [task.to_dict(include_relationships=True) for task in tasks]
 
     @staticmethod
-    def get(task_id):
+    def get(task_id, actor):
         task = db.session.get(Task, task_id)
         if not task:
             raise NotFoundError("Task não encontrada")
+        TaskService._authorize(task, actor)
         return task.to_dict(include_relationships=True)
 
-    def create(self, payload):
-        values = self._normalize(payload, partial=False)
+    def create(self, payload, actor):
+        values = self._normalize(payload, partial=False, actor=actor)
+        values.setdefault("user_id", actor.id)
         task = Task(**values)
         db.session.add(task)
         db.session.commit()
         return task.to_dict(), 201
 
-    def update(self, task_id, payload):
+    def update(self, task_id, payload, actor):
         task = db.session.get(Task, task_id)
         if not task:
             raise NotFoundError("Task não encontrada")
-        for key, value in self._normalize(payload, partial=True).items():
+        TaskService._authorize(task, actor)
+        for key, value in self._normalize(payload, partial=True, actor=actor).items():
             setattr(task, key, value)
         db.session.commit()
         return task.to_dict(), 200
 
     @staticmethod
-    def delete(task_id):
+    def delete(task_id, actor):
         task = db.session.get(Task, task_id)
         if not task:
             raise NotFoundError("Task não encontrada")
+        TaskService._authorize(task, actor)
         db.session.delete(task)
         db.session.commit()
         return {"message": "Task deletada com sucesso"}
 
     @staticmethod
-    def search(filters):
-        statement = db.select(Task).options(joinedload(Task.user), joinedload(Task.category))
+    def search(filters, actor):
+        statement = TaskService._visible(actor).options(joinedload(Task.user), joinedload(Task.category))
         query = filters.get("q", "").strip()
         if query:
             statement = statement.where(or_(Task.title.contains(query), Task.description.contains(query)))
@@ -70,11 +84,11 @@ class TaskService:
         return [task.to_dict(include_relationships=True) for task in tasks]
 
     @staticmethod
-    def stats():
+    def stats(actor):
         rows = dict(db.session.execute(
-            db.select(Task.status, func.count(Task.id)).group_by(Task.status)
+            TaskService._visible(actor).with_only_columns(Task.status, func.count(Task.id)).group_by(Task.status)
         ).all())
-        tasks = db.session.execute(db.select(Task)).scalars().all()
+        tasks = db.session.execute(TaskService._visible(actor)).scalars().all()
         total = sum(rows.values())
         done = rows.get("done", 0)
         return {
@@ -88,9 +102,11 @@ class TaskService:
         }
 
     @staticmethod
-    def _normalize(payload, partial):
+    def _normalize(payload, partial, actor):
         if not isinstance(payload, dict):
             raise ValidationError("Dados inválidos")
+        if not actor.is_admin() and "user_id" in payload and payload["user_id"] != actor.id:
+            raise AuthorizationError("Somente administradores podem atribuir tarefas a outros usuários")
         values = {}
         if not partial or "title" in payload:
             title = str(payload.get("title", "")).strip()

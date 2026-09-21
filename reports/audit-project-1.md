@@ -2,10 +2,12 @@
 
 - **Project:** `code-smells-project`
 - **Audit date:** `2026-09-21`
+- **Source snapshot:** `6d1ce6248c3e956801010a89d8bdaab48029bf30`
+- **Source inventory:** [inventário original](../validation/source-inventory.md)
 - **Stack:** Python 3 + Flask 3.1.1 + sqlite3
 - **Scope:** código Python de primeira parte e `requirements.txt`
 - **Analyzed:** 4 arquivos Python, 780 linhas
-- **Baseline:** sem suíte de testes configurada; boot e endpoints ainda não executados nesta implementação inicial
+- **Baseline:** snapshot anterior à refatoração; sem suíte de testes. Validações históricas declaradas abaixo; revalidação atual em `validation/`.
 
 ## Summary
 
@@ -18,6 +20,8 @@
 | **Total** | **11** |
 
 ## Findings
+
+Snapshot da Fase 2: os status `OPEN` abaixo descrevem o código original. A tabela **Current finding status** registra o estado após correção e é a referência vigente.
 
 ### [CRITICAL] AP-01 — Endpoint permite SQL arbitrário
 
@@ -134,6 +138,8 @@
 
 ## Validation Baseline
 
+Registro histórico preservado: os comandos/observações desta tabela não possuem transcrição integral no repositório. Não confundir com os logs reproduzíveis da revalidação atual.
+
 | Check | Command/request | Result before refactor |
 |---|---|---|
 | Syntax/import | import via Flask test client | PASS |
@@ -143,18 +149,18 @@
 
 ## Risks and Unverified Items
 
-- O comportamento real com SQLite e as respostas dos endpoints ainda requer execução em ambiente isolado.
+- A execução com SQLite foi revalidada em banco temporário; a matriz HTTP é exercitada pelos testes, sem comprovar todo payload possível.
 - Não foi verificado se as credenciais hardcoded foram usadas fora deste exercício; devem ser tratadas como comprometidas.
 
 ## Approval Gate
 
-No source files were modified during phases 1–2.
+Registro histórico declarado: nenhuma alteração de código nas fases 1–2. A transcrição da invocação original e da resposta ao gate não foi preservada; este texto não comprova aquela execução.
 
 Phase 2 complete. Proceed with refactoring (Phase 3)? [y/n]
 
 ## Refactoring Result
 
-Refatoração autorizada e concluída em 2026-09-21.
+Refatoração inicial registrada em 2026-09-21. Sua autorização histórica foi declarada, mas a transcrição não foi preservada. As correções posteriores foram autorizadas nesta conversa por “Aplique as correções e ajustes necessários”.
 
 ### Current finding status
 
@@ -178,6 +184,8 @@ Refatoração autorizada e concluída em 2026-09-21.
 
 ### Validation after refactor
 
+Resultados da primeira entrega, preservados como histórico. Consulte a revalidação atual ao final para os testes/logs vigentes.
+
 | Check | Result |
 |---|---|
 | Tests | PASS — 4 testes (`unittest`) |
@@ -191,3 +199,11 @@ Refatoração autorizada e concluída em 2026-09-21.
 
 - O endpoint incompatível `/admin/query` foi deliberadamente desativado; clientes devem removê-lo.
 - Valores de credenciais anteriormente versionados devem ser considerados comprometidos e rotacionados fora do repositório.
+
+### Revalidação atual
+
+- Testes: **4 passaram**, incluindo matriz de endpoints original e CRUD.
+- Comando reproduzível na raiz: `python3 validation/revalidate.py --node /caminho/para/node` (Node >=18 <23; esta execução usa 18.20.8).
+- Saída atual: [testes](../validation/project-1-tests.log), [boot real](../validation/boot-smoke.log).
+- Boot usa banco temporário e encerra o servidor após a requisição HTTP. Os testes cobrem métodos/rotas, não uma equivalência exaustiva de todos os payloads legados.
+- A execução inicial da skill nas três fases não foi reconstituída; as evidências atuais demonstram o estado corrigido da entrega.

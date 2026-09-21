@@ -2,10 +2,12 @@
 
 - **Project:** `task-manager-api`
 - **Audit date:** `2026-09-21`
+- **Source snapshot:** `6d1ce6248c3e956801010a89d8bdaab48029bf30`
+- **Source inventory:** [inventário original](../validation/source-inventory.md)
 - **Stack:** Python + Flask 3.0.0 + Flask-SQLAlchemy 3.1.1
 - **Scope:** aplicação, models, routes, services e utils
-- **Analyzed:** 13 arquivos Python, 1.158 linhas
-- **Baseline:** sem suíte de testes configurada; boot e endpoints ainda não executados nesta implementação inicial
+- **Analyzed:** 15 arquivos Python, 1.158 linhas
+- **Baseline:** snapshot anterior à refatoração; sem suíte de testes. Validações históricas declaradas abaixo; revalidação atual em `validation/`.
 
 ## Summary
 
@@ -18,6 +20,8 @@
 | **Total** | **11** |
 
 ## Findings
+
+Snapshot da Fase 2: os status `OPEN` abaixo descrevem o código original. A tabela **Current finding status** registra o estado após correção e é a referência vigente.
 
 ### [CRITICAL] AP-02 — Segredos hardcoded na aplicação e SMTP
 
@@ -122,7 +126,7 @@
 
 | API | Location | Version evidence | Modern equivalent | Status |
 |---|---|---|---|---|
-| `Model.query.get(id)` | diversas rotas | Flask-SQLAlchemy 3.1.1 em `requirements.txt`; confirmar docs durante execução | `db.session.get(Model, id)` | OPEN |
+| `Model.query.get(id)` | diversas rotas | Flask-SQLAlchemy 3.1.1 em `requirements.txt`; API legacy removida; testes executam com warnings de depreciação tratados como erro | `db.session.get(Model, id)` | OPEN |
 
 ## Refactoring Plan
 
@@ -134,6 +138,8 @@
 
 ## Validation Baseline
 
+Registro histórico preservado: os comandos/observações desta tabela não possuem transcrição integral no repositório. Não confundir com os logs reproduzíveis da revalidação atual.
+
 | Check | Command/request | Result before refactor |
 |---|---|---|
 | Syntax/import | import via Flask test client | PASS |
@@ -143,18 +149,18 @@
 
 ## Risks and Unverified Items
 
-- A confirmação formal da deprecation depende da documentação correspondente à versão resolvida no ambiente.
+- O registro inicial não preservou a consulta à documentação de depreciação; a revalidação comprova execução com warnings tratados como erro, sem alegar reproduzir essa consulta.
 - A migração de hashes exige compatibilidade com usuários já persistidos.
 
 ## Approval Gate
 
-No source files were modified during phases 1–2.
+Registro histórico declarado: nenhuma alteração de código nas fases 1–2. A transcrição da invocação original e da resposta ao gate não foi preservada; este texto não comprova aquela execução.
 
 Phase 2 complete. Proceed with refactoring (Phase 3)? [y/n]
 
 ## Refactoring Result
 
-Refatoração autorizada e concluída em 2026-09-21.
+Refatoração inicial registrada em 2026-09-21. Sua autorização histórica foi declarada, mas a transcrição não foi preservada. As correções posteriores foram autorizadas nesta conversa por “Aplique as correções e ajustes necessários”.
 
 ### Current finding status
 
@@ -162,7 +168,7 @@ Refatoração autorizada e concluída em 2026-09-21.
 |---|---|---|
 | Segredos hardcoded | RESOLVED | `config/settings.py:6-9` exige `SECRET_KEY`; serviço SMTP inseguro e não usado foi removido. |
 | MD5/hash serializado | RESOLVED | `models/user.py:29-36` usa Werkzeug e `to_dict` exclui senha. |
-| Token falso/sem auth | RESOLVED | `services/auth_service.py:1-23` assina/expira tokens e decorators protegem as rotas. |
+| Token falso/sem auth | RESOLVED | `services/auth_service.py` assina/expira tokens; services recebem o ator e restringem tarefas/perfis/relatórios por propriedade ou papel, cobertos pelos testes de autorização. |
 | Regras nas routes | RESOLVED | Blueprints delegam a controllers e services. |
 | Integridade de delete | RESOLVED | relações declaram `CASCADE`/`SET NULL` e service controla commit. |
 | N+1 | RESOLVED | `joinedload`/`selectinload` e agregações substituem queries em loops. |
@@ -178,6 +184,8 @@ Refatoração autorizada e concluída em 2026-09-21.
 
 ### Validation after refactor
 
+Resultados da primeira entrega, preservados como histórico. Consulte a revalidação atual ao final para os testes/logs vigentes.
+
 | Check | Result |
 |---|---|
 | Tests | PASS — 4 testes (`unittest`) cobrindo auth, matriz de endpoints e CRUD |
@@ -191,3 +199,17 @@ Refatoração autorizada e concluída em 2026-09-21.
 
 - Bancos antigos com hashes MD5 precisam de migração de dados; a implementação nova não aceita MD5 silenciosamente.
 - Alterações de autenticação são incompatíveis por segurança: consumidores devem efetuar login e enviar Bearer token.
+
+### Correções da revisão
+
+- Usuários comuns e managers acessam apenas suas próprias tarefas, perfis e relatórios individuais. Listagem, busca e estatísticas de tarefas são filtradas pelo ator. Somente administradores acessam o relatório global e atribuem tarefas a terceiros; a reatribuição por usuário comum é rejeitada.
+- O contrato original de `overdue.tasks` foi restaurado: `id`, `title`, `due_date` e `days_overdue`. Teste verifica os valores e as chaves.
+- Incompatibilidade de segurança explícita: acessos a recursos alheios retornam 403; cadastro e login continuam públicos.
+
+### Revalidação atual
+
+- Testes: **7 passaram**, incluindo ownership, acesso administrativo e contrato de tarefas atrasadas.
+- Comando reproduzível na raiz: `python3 validation/revalidate.py --node /caminho/para/node` (Node >=18 <23; esta execução usa 18.20.8).
+- Saída atual: [testes](../validation/project-3-tests.log), [boot real](../validation/boot-smoke.log).
+- Boot usa banco temporário e encerra o servidor após a requisição HTTP. Os testes cobrem métodos/rotas, não uma equivalência exaustiva de todos os payloads legados.
+- A execução inicial da skill nas três fases não foi reconstituída; as evidências atuais demonstram o estado corrigido da entrega.

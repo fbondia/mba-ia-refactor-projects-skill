@@ -1,20 +1,21 @@
-Command: start all three applications on ports 5101-5103 and issue HTTP smoke requests
-code-smells-project GET /health -> 200
-ecommerce-api-legacy GET /api/admin/financial-report without token -> 401
-task-manager-api GET /health -> 200
---- code-smells-project boot ---
+Validation UTC: 2026-09-21T19:38:08.890239+00:00
+Base commit: 1c361cd643a95db344faea2be392a5e8384c1074; working tree under review
+
+code-smells-project: boot PASS; GET /health -> 200
  * Serving Flask app 'src.app'
  * Debug mode: off
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on http://127.0.0.1:5101
-Press CTRL+C to quit
-127.0.0.1 - - [21/Sep/2026 16:11:16] "GET /health HTTP/1.1" 200 -
---- ecommerce-api-legacy boot ---
-LMS API listening on http://127.0.0.1:5102
---- task-manager-api boot ---
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59429
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [21/Sep/2026 16:38:13] "GET /health HTTP/1.1" 200 -
+
+ecommerce-api-legacy: boot PASS; GET /api/admin/financial-report -> 200
+LMS API listening on http://127.0.0.1:59438
+
+task-manager-api: boot PASS; GET /health -> 200
  * Serving Flask app 'application'
  * Debug mode: off
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on http://127.0.0.1:5103
-Press CTRL+C to quit
-127.0.0.1 - - [21/Sep/2026 16:11:16] "GET /health HTTP/1.1" 200 -
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59442
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [21/Sep/2026 16:38:14] "GET /health HTTP/1.1" 200 -

@@ -9,13 +9,13 @@ Execute as três fases em ordem. A skill pode estar instalada na raiz do reposit
 
 ## Seleção do alvo
 
-- Se o usuário nomear um ou mais projetos, limite análise, auditoria e refatoração a eles.
-- Se a sessão estiver dentro de `code-smells-project/`, `ecommerce-api-legacy/` ou `task-manager-api/` e não houver alvo explícito, processe somente esse projeto.
-- Se a sessão estiver na raiz do repositório e não houver alvo explícito, processe os três projetos na ordem `code-smells-project/`, `ecommerce-api-legacy/`, `task-manager-api/`.
-- Trate cada diretório como uma aplicação independente: detecte stack e comandos separadamente.
-- Para múltiplos alvos, conclua as fases 1 e 2 de todos, apresente um resumo agregado e faça um único gate antes de modificar qualquer código-fonte.
-- Grave relatórios em `<raiz-do-repositório>/reports/`, mesmo quando a skill for invocada dentro de um projeto.
-- Não trate `.agents/`, `.claude/`, `reports/` ou os outros projetos como parte do source set do projeto que está sendo auditado.
+- Se o usuário nomear um ou mais caminhos, limite o trabalho a eles.
+- Sem alvo explícito, encontre a aplicação que contém o diretório atual usando manifests, entry points e código de primeira parte. Não dependa do nome da pasta nem da presença de Git.
+- Na raiz de um workspace com várias aplicações independentes, descubra-as pelos manifests/entry points, excluindo dependências, exemplos vendorizados e builds. Apresente os alvos identificados antes da auditoria; peça esclarecimento somente se houver ambiguidade real de escopo.
+- Detecte stack e comandos separadamente para cada aplicação. Para vários alvos, conclua análise e auditoria de todos antes de apresentar um único gate.
+- Use a raiz Git como raiz dos relatórios, quando disponível; sem Git, use a raiz do workspace selecionado ou da aplicação isolada. Grave em `reports/audit-<identificador-do-alvo>.md`, derivando o identificador do caminho relativo e evitando colisões.
+- Os nomes de relatório específicos do desafio abaixo são aliases de compatibilidade; não limitam as aplicações suportadas.
+- Exclua `.agents/`, `.claude/`, `reports/` e outras aplicações do source set de cada alvo.
 
 ## Regras invariantes
 
@@ -32,7 +32,7 @@ Execute as três fases em ordem. A skill pode estar instalada na raiz do reposit
 
 Leia [references/project-analysis.md](references/project-analysis.md) e siga as heurísticas. Para cada alvo, inspecione manifests, entry points, configuração, rotas, persistência, testes e documentação.
 
-Imprima um bloco por projeto:
+Registre o commit ou snapshot auditado, o inventário de arquivos contados (incluindo o critério para arquivos vazios) e salve a saída da análise como evidência. Imprima um bloco por projeto:
 
 ```text
 ================================
@@ -56,7 +56,7 @@ Leia [references/anti-patterns.md](references/anti-patterns.md), incluindo APIs 
 
 Ordene findings por `CRITICAL`, `HIGH`, `MEDIUM`, `LOW` e, dentro da severidade, por caminho e linha. Consolide ocorrências repetidas quando tiverem a mesma causa, registrando todas as localizações relevantes. Inclua riscos de falso positivo e itens não verificados.
 
-Use estes destinos na raiz do workspace:
+Para os projetos deste desafio, preserve estes destinos na raiz dos relatórios. Para qualquer outro alvo, use o nome genérico definido acima:
 
 | Projeto | Relatório |
 |---|---|
@@ -70,7 +70,7 @@ Depois de exibir o resumo de todos os alvos, encerre a resposta com exatamente u
 Phase 2 complete. Proceed with refactoring (Phase 3)? [y/n]
 ```
 
-Não continue no mesmo turno sem resposta afirmativa. A aprovação vale apenas para os projetos e o plano apresentados.
+Não continue no mesmo turno sem resposta afirmativa, exceto quando o usuário já tiver aprovado explicitamente esse mesmo escopo e plano na conversa. A aprovação vale apenas para os projetos e o plano apresentados. Registre a resposta real e o escopo aprovado; nunca invente uma transcrição ausente.
 
 ## Fase 3 — Refatoração e validação
 
@@ -89,7 +89,8 @@ Validação mínima obrigatória por projeto:
 - executar testes existentes;
 - validar importação/compilação/sintaxe;
 - iniciar a aplicação de forma limitada e encerrá-la ao concluir;
-- exercitar cada endpoint original ao menos uma vez, cobrindo sucesso e erros críticos quando houver fixture segura;
+- exercitar cada endpoint original ao menos uma vez, comparando também campos, tipos e valores relevantes das respostas com a baseline;
+- testar autorização com dois usuários distintos: leitura, edição, exclusão, reatribuição e filtragem de coleções, além de acesso administrativo;
 - verificar que segredos não estão no código nem nas respostas;
 - confirmar rollback e integridade em fluxos transacionais modificados.
 

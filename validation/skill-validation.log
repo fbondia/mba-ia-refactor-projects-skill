@@ -1,9 +1,17 @@
-Command: quick_validate.py <skill-path>
+Validation UTC: 2026-09-21T19:39:11.828003+00:00
+Structural validation only; not a transcript of skill execution.
+PyYAML 6.0.3 installed in temporary validation dependency directory.
 
-.agents/skills/refactor-arch: Skill is valid!
-code-smells-project/.agents/skills/refactor-arch: Skill is valid!
-ecommerce-api-legacy/.agents/skills/refactor-arch: Skill is valid!
-task-manager-api/.agents/skills/refactor-arch: Skill is valid!
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/fbondia/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/fbondia/Source/mine/fctech/desafio-03/.agents/skills/refactor-arch
+Skill is valid!
 
-Command: diff -qr root-skill <project-skill>
-All skill copies are identical.
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/fbondia/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/fbondia/Source/mine/fctech/desafio-03/code-smells-project/.agents/skills/refactor-arch
+Skill is valid!
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/fbondia/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/fbondia/Source/mine/fctech/desafio-03/ecommerce-api-legacy/.agents/skills/refactor-arch
+Skill is valid!
+
+$ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/fbondia/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/fbondia/Source/mine/fctech/desafio-03/task-manager-api/.agents/skills/refactor-arch
+Skill is valid!
+
+All four skill copies are byte-identical.

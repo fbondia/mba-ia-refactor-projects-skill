@@ -20,7 +20,7 @@ def get_users(): return respond(controller.list_all())
 
 @user_bp.get("/users/<int:user_id>")
 @login_required
-def get_user(user_id): return respond(controller.get(user_id))
+def get_user(user_id): return respond(controller.get(user_id, g.current_user))
 
 
 @user_bp.post("/users")
@@ -41,7 +41,7 @@ def delete_user(user_id): return respond(controller.delete(user_id, g.current_us
 @user_bp.get("/users/<int:user_id>/tasks")
 @login_required
 def get_user_tasks(user_id):
-    payload, status = controller.get(user_id)
+    payload, status = controller.get(user_id, g.current_user)
     return jsonify(payload["tasks"]), status
 
 

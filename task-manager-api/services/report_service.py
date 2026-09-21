@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func
 
 from database import db
-from exceptions import NotFoundError, ValidationError
+from exceptions import AuthorizationError, NotFoundError, ValidationError
 from models.category import Category
 from models.task import Task
 from models.user import User
@@ -41,7 +41,14 @@ class ReportService:
             },
             "overdue": {
                 "count": sum(task.overdue for task in tasks),
-                "tasks": [task.to_dict() for task in tasks if task.overdue],
+                "tasks": [
+                    {
+                        "id": task.id, "title": task.title, "due_date": str(task.due_date),
+                        "days_overdue": (datetime.now(timezone.utc).replace(tzinfo=None)
+                                         - task.due_date.replace(tzinfo=None)).days,
+                    }
+                    for task in tasks if task.overdue
+                ],
             },
             "recent_activity": {
                 "tasks_created_last_7_days": db.session.scalar(
@@ -62,7 +69,9 @@ class ReportService:
         }
 
     @staticmethod
-    def user_report(user_id):
+    def user_report(user_id, actor):
+        if actor.id != user_id and not actor.is_admin():
+            raise AuthorizationError("Operação não autorizada")
         user = db.session.get(User, user_id)
         if not user: raise NotFoundError("Usuário não encontrado")
         tasks = db.session.execute(db.select(Task).where(Task.user_id == user_id)).scalars().all()

@@ -21,7 +21,9 @@ class UserService:
         return [{**user.to_dict(), "task_count": len(user.tasks)} for user in users]
 
     @staticmethod
-    def get(user_id):
+    def get(user_id, actor):
+        if actor.id != user_id and not actor.is_admin():
+            raise AuthorizationError("Operação não autorizada")
         user = db.session.execute(
             db.select(User).where(User.id == user_id).options(selectinload(User.tasks))
         ).scalar_one_or_none()

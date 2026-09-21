@@ -1,15 +1,21 @@
-Runtime: Python 3.14.7
+Validation UTC: 2026-09-21T19:38:08.890239+00:00
+Base commit: 1c361cd643a95db344faea2be392a5e8384c1074; working tree under review
 
-Command: SECRET_KEY=test-secret-not-for-production .venv/bin/python -m unittest discover -s tests -v
+$ /Users/fbondia/Source/mine/fctech/desafio-03/code-smells-project/.venv/bin/python --version
+Python 3.14.7
+Exit code: 0
+
+$ /Users/fbondia/Source/mine/fctech/desafio-03/code-smells-project/.venv/bin/python -W error::DeprecationWarning -m unittest discover -s tests -v
 test_admin_security_and_removed_query (test_api.EcommerceApiTest.test_admin_security_and_removed_query) ... ok
 test_original_endpoint_matrix (test_api.EcommerceApiTest.test_original_endpoint_matrix) ... ok
 test_product_crud_and_validation (test_api.EcommerceApiTest.test_product_crud_and_validation) ... ok
 test_user_login_and_order_transaction (test_api.EcommerceApiTest.test_user_login_and_order_transaction) ... ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 0.922s
+Ran 4 tests in 0.827s
 
 OK
+Exit code: 0
 
-Command: .venv/bin/python -m compileall -q app.py src tests
-compileall: PASS
+$ /Users/fbondia/Source/mine/fctech/desafio-03/code-smells-project/.venv/bin/python -m compileall -q app.py src/__init__.py src/app.py src/config/__init__.py src/config/settings.py src/controllers/__init__.py src/controllers/admin_controller.py src/controllers/order_controller.py src/controllers/product_controller.py src/controllers/user_controller.py src/exceptions.py src/infrastructure/__init__.py src/infrastructure/database.py src/middlewares/__init__.py src/middlewares/error_handler.py src/models/__init__.py src/models/order_model.py src/models/product_model.py src/models/user_model.py src/views/__init__.py src/views/routes.py tests/test_api.py
+Exit code: 0

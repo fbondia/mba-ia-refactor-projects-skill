@@ -101,6 +101,73 @@ class TaskManagerApiTest(unittest.TestCase):
             "/tasks", headers={"Authorization": "Bearer forged-token"}
         ).status_code, 401)
 
+    def test_task_ownership_and_admin_access(self):
+        created_user = self.client.post('/users', json={
+            'name': 'Other', 'email': 'other@example.com', 'password': 'strong-other-pass',
+        }).get_json()
+        token = self.client.post('/login', json={
+            'email': 'other@example.com', 'password': 'strong-other-pass',
+        }).get_json()['token']
+        headers = {'Authorization': f'Bearer {token}'}
+        admin_task = self.client.post('/tasks', headers=self.headers, json={
+            'title': 'Admin private task', 'user_id': 1,
+        }).get_json()['id']
+        own = self.client.post('/tasks', headers=headers, json={'title': 'Own task'})
+        self.assertEqual(own.status_code, 201)
+        own_id = own.get_json()['id']
+        self.assertEqual(own.get_json()['user_id'], created_user['id'])
+        for response in (
+            self.client.get(f'/tasks/{admin_task}', headers=headers),
+            self.client.put(f'/tasks/{admin_task}', headers=headers, json={'status': 'done'}),
+            self.client.delete(f'/tasks/{admin_task}', headers=headers),
+            self.client.post('/tasks', headers=headers, json={'title': 'Invalid owner', 'user_id': 1}),
+            self.client.put(f'/tasks/{own_id}', headers=headers, json={'user_id': 1}),
+            self.client.put(f'/tasks/{own_id}', headers=headers, json={'user_id': None}),
+        ):
+            self.assertEqual(response.status_code, 403)
+        for path in ('/tasks', '/tasks/search?q=task'):
+            response = self.client.get(path, headers=headers)
+            self.assertEqual([task['id'] for task in response.get_json()], [own_id])
+        self.assertEqual(self.client.get('/tasks/stats', headers=headers).get_json()['total'], 1)
+        self.assertEqual(self.client.get(f'/tasks/{own_id}', headers=headers).status_code, 200)
+        self.assertEqual(self.client.put(f'/tasks/{own_id}', headers=headers,
+                                         json={'status': 'done'}).status_code, 200)
+        self.assertEqual(self.client.get(f'/tasks/{admin_task}', headers=self.headers).status_code, 200)
+        self.assertEqual(self.client.put(f'/tasks/{own_id}', headers=self.headers,
+                                         json={'title': 'Admin edited'}).status_code, 200)
+        self.assertEqual(self.client.delete(f'/tasks/{own_id}', headers=headers).status_code, 200)
+        self.assertEqual(self.client.delete(f'/tasks/{admin_task}', headers=self.headers).status_code, 200)
+
+    def test_user_and_report_access_policy(self):
+        user = self.client.post('/users', json={
+            'name': 'Reader', 'email': 'reader@example.com', 'password': 'strong-reader-pass',
+        }).get_json()
+        token = self.client.post('/login', json={
+            'email': 'reader@example.com', 'password': 'strong-reader-pass',
+        }).get_json()['token']
+        headers = {'Authorization': f'Bearer {token}'}
+        for path in ('/users', '/users/1', '/users/1/tasks', '/reports/user/1', '/reports/summary'):
+            self.assertEqual(self.client.get(path, headers=headers).status_code, 403, path)
+        for path in (f"/users/{user['id']}", f"/users/{user['id']}/tasks", f"/reports/user/{user['id']}"):
+            self.assertEqual(self.client.get(path, headers=headers).status_code, 200, path)
+        self.assertEqual(self.client.post('/categories', headers=headers,
+                                         json={'name': 'Forbidden'}).status_code, 403)
+
+    def test_overdue_report_preserves_original_contract(self):
+        from datetime import datetime, timedelta, timezone
+        due = (datetime.now(timezone.utc) - timedelta(days=3)).strftime('%Y-%m-%d')
+        created = self.client.post('/tasks', headers=self.headers, json={
+            'title': 'Overdue task', 'user_id': 1, 'due_date': due,
+        }).get_json()
+        report = self.client.get('/reports/summary', headers=self.headers)
+        self.assertEqual(report.status_code, 200)
+        overdue = report.get_json()['overdue']
+        self.assertEqual(overdue['count'], 1)
+        self.assertEqual(overdue['tasks'], [{
+            'id': created['id'], 'title': 'Overdue task',
+            'due_date': due + ' 00:00:00', 'days_overdue': 3,
+        }])
+
 
 if __name__ == "__main__":
     unittest.main()

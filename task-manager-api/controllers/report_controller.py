@@ -3,7 +3,7 @@ from services.report_service import CategoryService, ReportService
 
 class ReportController:
     def summary(self): return ReportService.summary(), 200
-    def user(self, user_id): return ReportService.user_report(user_id), 200
+    def user(self, user_id, actor): return ReportService.user_report(user_id, actor), 200
 
 
 class CategoryController:
