@@ -1,0 +1,15 @@
+Runtime: Python 3.14.7
+
+Command: SECRET_KEY=test-secret-not-for-production .venv/bin/python -m unittest discover -s tests -v
+test_admin_security_and_removed_query (test_api.EcommerceApiTest.test_admin_security_and_removed_query) ... ok
+test_original_endpoint_matrix (test_api.EcommerceApiTest.test_original_endpoint_matrix) ... ok
+test_product_crud_and_validation (test_api.EcommerceApiTest.test_product_crud_and_validation) ... ok
+test_user_login_and_order_transaction (test_api.EcommerceApiTest.test_user_login_and_order_transaction) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.922s
+
+OK
+
+Command: .venv/bin/python -m compileall -q app.py src tests
+compileall: PASS

@@ -26,6 +26,8 @@ Content-Type: application/json
 
 ### Relatório financeiro administrativo
 GET {{baseUrl}}/api/admin/financial-report
+Authorization: Bearer {{$dotenv ADMIN_TOKEN}}
 
 ### Deletar usuário
 DELETE {{baseUrl}}/api/users/1
+Authorization: Bearer {{$dotenv ADMIN_TOKEN}}

@@ -1,0 +1,15 @@
+Runtime: Python 3.14.7
+
+Command: SECRET_KEY=test-secret-not-for-production .venv/bin/python -W error::DeprecationWarning -m unittest discover -s tests -v
+test_category_admin_crud_and_signed_token (test_api.TaskManagerApiTest.test_category_admin_crud_and_signed_token) ... ok
+test_original_endpoint_matrix_and_task_crud (test_api.TaskManagerApiTest.test_original_endpoint_matrix_and_task_crud) ... ok
+test_public_endpoints_and_authentication (test_api.TaskManagerApiTest.test_public_endpoints_and_authentication) ... ok
+test_user_can_update_and_delete_self (test_api.TaskManagerApiTest.test_user_can_update_and_delete_self) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.032s
+
+OK
+
+Command: .venv/bin/python -m compileall -q ...
+compileall: PASS

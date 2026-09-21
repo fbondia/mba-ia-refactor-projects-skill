@@ -1,14 +1,22 @@
-const express = require('express');
-const AppManager = require('./AppManager');
-const { config } = require('./utils');
+const { createApp } = require('./compositionRoot');
 
-const app = express();
-app.use(express.json());
+async function start() {
+    const { app, database, config } = await createApp();
+    const server = app.listen(config.port, config.host, () => {
+        console.log(`LMS API listening on http://${config.host}:${config.port}`);
+    });
 
-const manager = new AppManager();
-manager.initDb();
-manager.setupRoutes(app);
+    const shutdown = () => server.close(() => database.close().finally(() => process.exit(0)));
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+    return { server, database };
+}
 
-app.listen(config.port, () => {
-    console.log(`Frankenstein LMS rodando na porta ${config.port}...`);
-});
+if (require.main === module) {
+    start().catch((error) => {
+        console.error('Failed to start LMS API', error.message);
+        process.exit(1);
+    });
+}
+
+module.exports = { start };

@@ -1,0 +1,9 @@
+Command: quick_validate.py <skill-path>
+
+.agents/skills/refactor-arch: Skill is valid!
+code-smells-project/.agents/skills/refactor-arch: Skill is valid!
+ecommerce-api-legacy/.agents/skills/refactor-arch: Skill is valid!
+task-manager-api/.agents/skills/refactor-arch: Skill is valid!
+
+Command: diff -qr root-skill <project-skill>
+All skill copies are identical.
